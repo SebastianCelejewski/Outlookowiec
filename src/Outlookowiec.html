@@ -1,0 +1,139 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf8"/>
+<style>
+
+#taskboard {
+    border: 1px solid black;
+}
+
+.taskboardPane {
+    display: inline-block;
+    border: 1px solid red;
+    margin: 10px;
+    padding: 10px;
+    width: 200px;
+    height: 200px;
+}
+
+.task {
+    background-color: yellow;
+    border: 1px solid #808000;
+}
+
+</style>
+</head>
+<body>
+
+<fieldset id="gameInfo">
+    <legend>Game Info</legend>
+    <div id="roundNumber"></div>
+    <div id="score"></div>
+</fieldset>
+
+<fieldset id="taskboard">
+    <legend>Taskboard</legend>
+
+    <fieldset class="taskboardPane">
+        <legend>Backlog</legend>
+        <div id="backlog"></div>
+    </fieldset>
+
+    <fieldset class="taskboardPane">
+        <legend>In Progress</legend>
+        <div id="inProgress"></div>
+    </fieldset>
+
+    <fieldset class="taskboardPane">
+        <legend>Complete</legend>
+        <div id="complete"></div>
+    </fieldset>
+</fieldset>
+
+<fieldset>
+    <legend>Requests for Outlookowiec</legend>
+    <div id="requests"></div>
+</fieldset>
+
+<fieldset>
+    <legend>Steuerung</legend>
+    <a href="#" onclick="step(); return false;">Step</a>
+</fieldset>
+
+<script>
+    var backlog = [];
+    var inProgress = [];
+    var complete = [];
+
+    var round = 0;
+    var score = 0;
+    var taskCounter = 0;
+    var requestCounter = 0;
+
+    var requestsFromAnalysts = [];
+    var requestsFromDevelopers = [];
+
+    function printTasks(taskboardPhase) {
+        if (taskboardPhase.length == 0) {
+            return "<p>None!</p>"
+        }
+        var result = "";
+        for (var i = 0; i < taskboardPhase.length; i++) {
+            result += "<p class='task'>" + taskboardPhase[i].getName() +"</p>";
+        }
+        return result;
+    }
+
+    function step() {
+        if (inProgress.length == 0 && backlog.length > 0) {
+            task = backlog.pop();
+            inProgress.push(task);
+            var newRequest = {
+                type:"DevAnalysis",
+                getName:function() {return "Dev Analysis for task #"+task.id}
+            }
+            requestsFromDevelopers.push(newRequest);
+        }
+
+        if (requestsFromAnalysts.length == 0 && backlog.length < 5) {
+            if (Math.random() > 0.8) {
+                var newTask = {
+                    id:(taskCounter++),
+                    status:"new",
+                    getName:function() {return "Task #"+this.id}
+                    }
+                backlog.push(newTask);
+            }
+            if (Math.random() > 0.8) {
+                var newQuestion = {
+                    id:(requestCounter++),
+                    status:"new",
+                    getName:function() {return "Question #"+this.id}
+                    }
+                requestsFromAnalysts.push(newQuestion);
+            }
+        }
+
+        document.getElementById("roundNumber").innerHTML = "<p>Round: "+round+"</p>";
+        document.getElementById("score").innerHTML = "<p>Score: "+score+"</p>";
+
+        document.getElementById("backlog").innerHTML =  printTasks(backlog);
+        document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
+        document.getElementById("complete").innerHTML =  printTasks(complete);
+
+        var allRequests = requestsFromAnalysts.concat(requestsFromDevelopers);
+
+        document.getElementById("requests").innerHTML = printTasks(allRequests);
+
+        round +=1 ;
+
+        return false;
+    }
+
+    step();
+
+</script>
+
+</body>
+</html>
