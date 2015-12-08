@@ -4,16 +4,41 @@
 <meta charset="utf8"/>
 <style>
 
-#taskboard {
-    border: 1px solid black;
+#gameInfoPanel {
+    background-color: #f8f8f0;
 }
 
-.taskboardPane {
+#taskboardPanel {
+    border: 1px solid black;
+    width: 740px;
+    height: 300px;
+    float:left;
+    background-color: #f8f8f0;
+}
+
+#projectLogPanel {
+    border: 1px solid black;
+    height: 300px;
+    background-color: #f8f8f0;
+}
+
+#requestsPanel {
+    border: 1px solid black;
+    clear: both;
+    background-color: #f8f8f0;
+}
+
+.taskboardElement {
     display: inline-block;
     border: 1px solid red;
     margin: 10px;
     padding: 10px;
     width: 200px;
+    height: 200px;
+    background-color: white;
+}
+
+.projectLog {
     height: 200px;
 }
 
@@ -22,46 +47,73 @@
     border: 1px solid #808000;
 }
 
+.action {
+    display: inline-block;
+    background-color: yellow;
+    border: 1px solid #808000;
+    cursor: pointer;
+    width: 300px;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+}
+
+.gameInfoField {
+    display: inline-block;
+    width: 250px;
+    border: 1px solid #808080;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: white;
+}
+
 </style>
 </head>
 <body>
+<h1>Outlookowiec - The Game. Version 0.0.2</h1>
 
-<fieldset id="gameInfo">
-    <legend>Game Info</legend>
-    <div id="roundNumber"></div>
-    <div id="score"></div>
-    <div id="timeWastedByBAs"></div>
-    <div id="timeWastedByDevelopers"></div>
+<fieldset id="messageFromTheLeaderPanel">
+    <legend>Message from the Leader</legend>
+    <div id="messageFromTheLeader"></div>
 </fieldset>
 
-<fieldset id="taskboard">
+<fieldset id="gameInfoPanel">
+    <legend>Game Info</legend>
+    <div class="gameInfoField" id="roundNumber"></div>
+    <div class="gameInfoField" id="score"></div>
+    <div class="gameInfoField" id="timeWastedByBAs"></div>
+    <div class="gameInfoField" id="timeWastedByDevelopers"></div>
+</fieldset>
+
+<fieldset id="taskboardPanel">
     <legend>Taskboard</legend>
 
-    <fieldset class="taskboardPane">
+    <fieldset class="taskboardElement">
         <legend>Backlog</legend>
         <div id="backlog"></div>
     </fieldset>
 
-    <fieldset class="taskboardPane">
+    <fieldset class="taskboardElement">
         <legend>In Progress</legend>
         <div id="inProgress"></div>
     </fieldset>
 
-    <fieldset class="taskboardPane">
+    <fieldset class="taskboardElement">
         <legend>Complete</legend>
         <div id="complete"></div>
     </fieldset>
 </fieldset>
 
-<fieldset>
-    <legend>Requests for Outlookowiec</legend>
-    <div id="requests"></div>
+<fieldset id="projectLogPanel">
+    <legend>Project Log</legend>
+    <div id="projectLog"></div>
 </fieldset>
 
-<fieldset>
-    <legend>Actions</legend>
-    <a href="#" onclick="step(); return false;">Do nothing</a>
-    <p>To handle a request, just click on in.</p>
+<fieldset id="requestsPanel">
+    <legend>Requests for Outlookowiec/Possible Actions</legend>
+    <div id="requests"></div>
 </fieldset>
 
 <script>
@@ -77,9 +129,22 @@
     var requestsFromAnalysts = [];
     var requestsFromDevelopers = [];
     var requestsFromSupport = [];
+    var doNothing = {
+        id:undefined,
+        type:"DoNothing",
+        getName:function() {return "Do nothing"}
+    }
+
+    var messagesFromTheLeader = [
+        "We need to be very careful",
+        "We need to have a sense of urgency",
+        "The sponsor is in a very aggresive mood today"
+    ]
 
     var timeWastedByBAs = 0;
     var timeWastedByDevelopers = 0;
+
+    var projectLog = [];
 
     function solve(id) {
         for (var i = 0; i < requestsFromAnalysts.length; i++) {
@@ -112,18 +177,39 @@
         step();
     }
 
-    function printTasks(taskboardPhase) {
+    function printTasks(allRequests) {
+        if (allRequests.length == 0) {
+            return "<p>None!</p>"
+        }
+        var result = "";
+        for (var i = 0; i < allRequests.length; i++) {
+            result += "<p class='task'>" + allRequests[i].getName() +"</p>";
+        }
+        return result;
+    }
+
+    function printActions(taskboardPhase) {
         if (taskboardPhase.length == 0) {
             return "<p>None!</p>"
         }
         var result = "";
         for (var i = 0; i < taskboardPhase.length; i++) {
-            result += "<p class='task' onclick='solve("+taskboardPhase[i].id+");'>" + taskboardPhase[i].getName() +"</p>";
+            result += "<p class='action' onclick='solve("+taskboardPhase[i].id+");'>" + taskboardPhase[i].getName() +"</p>";
+        }
+        return result;
+    }
+
+    function printLog(projectLog) {
+        var result = "";
+        for (var i = 0; i < projectLog.length; i++) {
+            result += "<p>"+projectLog[i]+"</p>";
         }
         return result;
     }
 
     function step() {
+        projectLog.push("Round "+round);
+
         // If developers are not doing anything and backlog has something
         // they will pick it
 
@@ -133,6 +219,7 @@
         if (inProgress.length == 0 && backlog.length > 0) {
             var task = backlog.pop();
             inProgress.push(task);
+            projectLog.push("Developers picked a task to work on");
             var newRequest = {
                 id:(requestCounter++),
                 type:"DevAnalysis",
@@ -141,6 +228,7 @@
             }
             requestsFromDevelopers.push(newRequest);
             developersHadSomethingToDo = true;
+            projectLog.push("Developers requested dev analysis");
         }
 
         // If developers have a card and all othe requests from developers are handled
@@ -156,6 +244,7 @@
                     }
                 requestsFromDevelopers.push(newQuestion);
                 developersHadSomethingToDo = true;
+                projectLog.push("Developers asked a question");
             } else if (Math.random() > 0.8) {
                 for (var i = 0; i < inProgress.length; i++) {
                     if (task.id == inProgress[i].id) {
@@ -165,10 +254,12 @@
                 complete.push(task);
                 score += task.importance;
                 developersHadSomethingToDo = true;
+                projectLog.push("Developers completed a task. You gained " + task.importance + " points.");
             }
 
             // Developers just doing their job
             developersHadSomethingToDo = true;
+            projectLog.push("Developers are working on a task");
         }
 
         // If there are no more than 4 cards in Backlog and all
@@ -184,6 +275,7 @@
                     }
                 backlog.push(newTask);
                 analystsHadSomethingToDo = true;
+                projectLog.push("Analysts completed analysis of a new task");
             }
 
             // They may also have a question for Outlookowiec
@@ -195,10 +287,12 @@
                     }
                 requestsFromAnalysts.push(newQuestion);
                 analystsHadSomethingToDo = true;
+                projectLog.push("Analysts asked a question");
             }
 
             // Analysts just doing their job
             analystsHadSomethingToDo = true;
+            projectLog.push("Analysts are working on new tasks");
         }
 
         // Support requests may appear
@@ -209,6 +303,7 @@
                 getName:function() {return "Support request #"+this.id+" from clients"}
                 }
             requestsFromSupport.push(newSupportRequest);
+            projectLog.push("A support request has arrived");
         }
 
         if (!developersHadSomethingToDo) {
@@ -218,6 +313,12 @@
         if (!analystsHadSomethingToDo) {
             timeWastedByBAs += 1;
         }
+
+        while (projectLog.length > 8) {
+            projectLog.shift();
+        }
+
+        var messageFromTheLeader = messagesFromTheLeader[Math.floor(Math.random()*messagesFromTheLeader.length)]
 
         var analystsWastedTimePercent = Math.floor(100 * timeWastedByBAs / round);
         var developersWastedTimePercent = Math.floor(100 * timeWastedByDevelopers / round);
@@ -231,9 +332,17 @@
         document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
         document.getElementById("complete").innerHTML =  printTasks(complete);
 
-        var allRequests = requestsFromAnalysts.concat(requestsFromDevelopers).concat(requestsFromSupport);
+        var allRequests = [doNothing].concat(requestsFromAnalysts).concat(requestsFromDevelopers).concat(requestsFromSupport);
 
-        document.getElementById("requests").innerHTML = printTasks(allRequests);
+        document.getElementById("requests").innerHTML = printActions(allRequests);
+
+        document.getElementById("projectLog").innerHTML = printLog(projectLog);
+
+        if (Math.random() > 0.75) {
+            document.getElementById("messageFromTheLeader").innerHTML = messageFromTheLeader;
+        } else {
+            document.getElementById("messageFromTheLeader").innerHTML = "";
+        }
 
         round +=1 ;
 
