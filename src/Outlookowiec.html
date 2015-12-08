@@ -74,37 +74,97 @@
     var requestsFromAnalysts = [];
     var requestsFromDevelopers = [];
 
+    function solve(id) {
+        for (var i = 0; i < requestsFromAnalysts.length; i++) {
+            var request = requestsFromAnalysts[i];
+            if (request.id == id) {
+                requestsFromAnalysts.splice(i, 1);
+            }
+        }
+
+        for (var i = 0; i < requestsFromDevelopers.length; i++) {
+            var request = requestsFromDevelopers[i];
+            if (request.id == id) {
+                requestsFromDevelopers.splice(i, 1);
+                var taskId = request.refId;
+                for (var j = 0; j < inProgress.length; j++) {
+                    var task = inProgress[j];
+                    if (task.id == taskId) {
+                        task.status="InProgress";
+                    }
+                }
+            }
+        }
+        step();
+    }
+
     function printTasks(taskboardPhase) {
         if (taskboardPhase.length == 0) {
             return "<p>None!</p>"
         }
         var result = "";
         for (var i = 0; i < taskboardPhase.length; i++) {
-            result += "<p class='task'>" + taskboardPhase[i].getName() +"</p>";
+            result += "<p class='task' onclick='solve("+taskboardPhase[i].id+");'>" + taskboardPhase[i].getName() +"</p>";
         }
         return result;
     }
 
     function step() {
+        // If developers are not doing anything and backlog has something
+        // they will pick it
         if (inProgress.length == 0 && backlog.length > 0) {
-            task = backlog.pop();
+            var task = backlog.pop();
             inProgress.push(task);
             var newRequest = {
+                id:(requestCounter++),
                 type:"DevAnalysis",
-                getName:function() {return "Dev Analysis for task #"+task.id}
+                refId:task.id,
+                getName:function() {return "Dev Analysis #"+this.id+" for task #"+task.id}
             }
             requestsFromDevelopers.push(newRequest);
         }
 
+        // If developers have a card and all othe requests from developers are handled
+        // they may have a question
+        if (inProgress.length > 0 && requestsFromDevelopers.length == 0) {
+            var task = inProgress[0];
+            if (Math.random() > 0.8) {
+                var newQuestion = {
+                    id:(requestCounter++),
+                    status:"new",
+                    refId:undefined,
+                    getName:function() {return "Question #"+this.id}
+                    }
+                requestsFromDevelopers.push(newQuestion);
+            }
+
+            // They may also complete the task
+            if (Math.random() > 0.8) {
+                for (var i = 0; i < inProgress.length; i++) {
+                    if (task.id == inProgress[i].id) {
+                        inProgress.splice(i, 1);
+                    }
+                }
+                complete.push(task);
+                score += task.importance;
+            }
+        }
+
+        // If there are no more than 4 cards in Backlog and all
+        // requests from analysts are handled
+        // analysts may create new task
         if (requestsFromAnalysts.length == 0 && backlog.length < 5) {
             if (Math.random() > 0.8) {
                 var newTask = {
                     id:(taskCounter++),
                     status:"new",
+                    importance: Math.floor((Math.random() * 10) + 1),
                     getName:function() {return "Task #"+this.id}
                     }
                 backlog.push(newTask);
             }
+
+            // They may also have a question for Outlookowiec
             if (Math.random() > 0.8) {
                 var newQuestion = {
                     id:(requestCounter++),
