@@ -304,10 +304,8 @@
                 backlog.push(newTask);
                 analystsHadSomethingToDo = true;
                 projectLog.push("Analysts completed analysis of a new task");
-            }
-
-            // They may also have a question for Outlookowiec
-            if (Math.random() > 0.8) {
+            } else if (Math.random() > 0.8) {
+                // They may also have a question for Outlookowiec
                 var newQuestion = {
                     id:(requestCounter++),
                     status:"new",
@@ -316,11 +314,11 @@
                 requestsFromAnalysts.push(newQuestion);
                 analystsHadSomethingToDo = true;
                 projectLog.push("Analysts asked a question");
+            } else {
+                // Analysts just doing their job
+                analystsHadSomethingToDo = true;
+                projectLog.push("Analysts are working on new tasks");
             }
-
-            // Analysts just doing their job
-            analystsHadSomethingToDo = true;
-            projectLog.push("Analysts are working on new tasks");
         }
 
         // Not resolved support requests?
