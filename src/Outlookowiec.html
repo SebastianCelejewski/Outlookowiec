@@ -30,6 +30,8 @@
     <legend>Game Info</legend>
     <div id="roundNumber"></div>
     <div id="score"></div>
+    <div id="timeWastedByBAs"></div>
+    <div id="timeWastedByDevelopers"></div>
 </fieldset>
 
 <fieldset id="taskboard">
@@ -57,8 +59,9 @@
 </fieldset>
 
 <fieldset>
-    <legend>Steuerung</legend>
-    <a href="#" onclick="step(); return false;">Step</a>
+    <legend>Actions</legend>
+    <a href="#" onclick="step(); return false;">Do nothing</a>
+    <p>To handle a request, just click on in.</p>
 </fieldset>
 
 <script>
@@ -66,13 +69,17 @@
     var inProgress = [];
     var complete = [];
 
-    var round = 0;
+    var round = 1;
     var score = 0;
     var taskCounter = 0;
     var requestCounter = 0;
 
     var requestsFromAnalysts = [];
     var requestsFromDevelopers = [];
+    var requestsFromSupport = [];
+
+    var timeWastedByBAs = 0;
+    var timeWastedByDevelopers = 0;
 
     function solve(id) {
         for (var i = 0; i < requestsFromAnalysts.length; i++) {
@@ -95,6 +102,13 @@
                 }
             }
         }
+
+        for (var i = 0; i < requestsFromSupport.length; i++) {
+            var request = requestsFromSupport[i];
+            if (request.id == id) {
+                requestsFromSupport.splice(i, 1);
+            }
+        }
         step();
     }
 
@@ -112,6 +126,10 @@
     function step() {
         // If developers are not doing anything and backlog has something
         // they will pick it
+
+        var developersHadSomethingToDo = false;
+        var analystsHadSomethingToDo = false;
+
         if (inProgress.length == 0 && backlog.length > 0) {
             var task = backlog.pop();
             inProgress.push(task);
@@ -119,9 +137,10 @@
                 id:(requestCounter++),
                 type:"DevAnalysis",
                 refId:task.id,
-                getName:function() {return "Dev Analysis #"+this.id+" for task #"+task.id}
+                getName:function() {return "Dev Analysis for task #"+task.id}
             }
             requestsFromDevelopers.push(newRequest);
+            developersHadSomethingToDo = true;
         }
 
         // If developers have a card and all othe requests from developers are handled
@@ -133,13 +152,11 @@
                     id:(requestCounter++),
                     status:"new",
                     refId:undefined,
-                    getName:function() {return "Question #"+this.id}
+                    getName:function() {return "Question #"+this.id+" from developers for task #"+task.id}
                     }
                 requestsFromDevelopers.push(newQuestion);
-            }
-
-            // They may also complete the task
-            if (Math.random() > 0.8) {
+                developersHadSomethingToDo = true;
+            } else if (Math.random() > 0.8) {
                 for (var i = 0; i < inProgress.length; i++) {
                     if (task.id == inProgress[i].id) {
                         inProgress.splice(i, 1);
@@ -147,7 +164,11 @@
                 }
                 complete.push(task);
                 score += task.importance;
+                developersHadSomethingToDo = true;
             }
+
+            // Developers just doing their job
+            developersHadSomethingToDo = true;
         }
 
         // If there are no more than 4 cards in Backlog and all
@@ -162,6 +183,7 @@
                     getName:function() {return "Task #"+this.id}
                     }
                 backlog.push(newTask);
+                analystsHadSomethingToDo = true;
             }
 
             // They may also have a question for Outlookowiec
@@ -169,20 +191,47 @@
                 var newQuestion = {
                     id:(requestCounter++),
                     status:"new",
-                    getName:function() {return "Question #"+this.id}
+                    getName:function() {return "Question #"+this.id+" from BAs"}
                     }
                 requestsFromAnalysts.push(newQuestion);
+                analystsHadSomethingToDo = true;
             }
+
+            // Analysts just doing their job
+            analystsHadSomethingToDo = true;
         }
+
+        // Support requests may appear
+        if (Math.random()>0.8) {
+            var newSupportRequest = {
+                id:(requestCounter++),
+                status:"new",
+                getName:function() {return "Support request #"+this.id+" from clients"}
+                }
+            requestsFromSupport.push(newSupportRequest);
+        }
+
+        if (!developersHadSomethingToDo) {
+            timeWastedByDevelopers += 1;
+        }
+
+        if (!analystsHadSomethingToDo) {
+            timeWastedByBAs += 1;
+        }
+
+        var analystsWastedTimePercent = Math.floor(100 * timeWastedByBAs / round);
+        var developersWastedTimePercent = Math.floor(100 * timeWastedByDevelopers / round);
 
         document.getElementById("roundNumber").innerHTML = "<p>Round: "+round+"</p>";
         document.getElementById("score").innerHTML = "<p>Score: "+score+"</p>";
+        document.getElementById("timeWastedByBAs").innerHTML = "<p>Time wasted by BAs: "+timeWastedByBAs+" ("+analystsWastedTimePercent+"%)</p>";
+        document.getElementById("timeWastedByDevelopers").innerHTML = "<p>Time wasted by developers: "+timeWastedByDevelopers+" ("+developersWastedTimePercent+"%)</p>";
 
         document.getElementById("backlog").innerHTML =  printTasks(backlog);
         document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
         document.getElementById("complete").innerHTML =  printTasks(complete);
 
-        var allRequests = requestsFromAnalysts.concat(requestsFromDevelopers);
+        var allRequests = requestsFromAnalysts.concat(requestsFromDevelopers).concat(requestsFromSupport);
 
         document.getElementById("requests").innerHTML = printTasks(allRequests);
 
