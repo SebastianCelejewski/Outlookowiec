@@ -74,10 +74,12 @@
 <body>
 <h1>Outlookowiec - The Game. Version 0.0.2</h1>
 
+<!--
 <fieldset id="messageFromTheLeaderPanel">
     <legend>Message from the Leader</legend>
     <div id="messageFromTheLeader"></div>
 </fieldset>
+-->
 
 <fieldset id="gameInfoPanel">
     <legend>Game Info</legend>
@@ -139,9 +141,6 @@
     }
 
     var messagesFromTheLeader = [
-        "We need to be very careful",
-        "We need to have a sense of urgency",
-        "The sponsor is in a very aggresive mood today"
     ]
 
     var otherRequestsTypes = [
@@ -388,11 +387,11 @@
 
         document.getElementById("projectLog").innerHTML = printLog(projectLog);
 
-        if (Math.random() > 0.75) {
-            document.getElementById("messageFromTheLeader").innerHTML = messageFromTheLeader;
-        } else {
-            document.getElementById("messageFromTheLeader").innerHTML = "";
-        }
+        // if (Math.random() > 0.75) {
+        //     document.getElementById("messageFromTheLeader").innerHTML = messageFromTheLeader;
+        // } else {
+        //     document.getElementById("messageFromTheLeader").innerHTML = "";
+        // }
 
         round +=1 ;
 
@@ -400,6 +399,20 @@
     }
 
     step();
+
+</script>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-19514706-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
 
 </script>
 
