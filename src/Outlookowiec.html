@@ -85,6 +85,7 @@
     <div class="gameInfoField" id="score"></div>
     <div class="gameInfoField" id="timeWastedByBAs"></div>
     <div class="gameInfoField" id="timeWastedByDevelopers"></div>
+    <div class="gameInfoField" id="timeWastedByYou"></div>
 </fieldset>
 
 <fieldset id="taskboardPanel">
@@ -143,14 +144,18 @@
 
     var timeWastedByBAs = 0;
     var timeWastedByDevelopers = 0;
+    var timeWastedByYou = 0;
 
     var projectLog = [];
 
     function solve(id) {
+        var youDidSomething = false;
+
         for (var i = 0; i < requestsFromAnalysts.length; i++) {
             var request = requestsFromAnalysts[i];
             if (request.id == id) {
                 requestsFromAnalysts.splice(i, 1);
+                youDidSomething = true;
             }
         }
 
@@ -165,6 +170,7 @@
                         task.status="InProgress";
                     }
                 }
+                youDidSomething = true;
             }
         }
 
@@ -172,8 +178,14 @@
             var request = requestsFromSupport[i];
             if (request.id == id) {
                 requestsFromSupport.splice(i, 1);
+                youDidSomething = true;
             }
         }
+
+        if (!youDidSomething) {
+            timeWastedByYou += 1;
+        }
+
         step();
     }
 
@@ -322,11 +334,13 @@
 
         var analystsWastedTimePercent = Math.floor(100 * timeWastedByBAs / round);
         var developersWastedTimePercent = Math.floor(100 * timeWastedByDevelopers / round);
+        var yourWastedTimePercent = Math.floor(100 * timeWastedByYou / (round-1));
 
         document.getElementById("roundNumber").innerHTML = "<p>Round: "+round+"</p>";
         document.getElementById("score").innerHTML = "<p>Score: "+score+"</p>";
         document.getElementById("timeWastedByBAs").innerHTML = "<p>Time wasted by BAs: "+timeWastedByBAs+" ("+analystsWastedTimePercent+"%)</p>";
         document.getElementById("timeWastedByDevelopers").innerHTML = "<p>Time wasted by developers: "+timeWastedByDevelopers+" ("+developersWastedTimePercent+"%)</p>";
+        document.getElementById("timeWastedByYou").innerHTML = "<p>Time wasted by you: "+timeWastedByYou+" ("+yourWastedTimePercent+"%)</p>";
 
         document.getElementById("backlog").innerHTML =  printTasks(backlog);
         document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
