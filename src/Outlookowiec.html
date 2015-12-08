@@ -147,7 +147,8 @@
     var otherRequestsTypes = [
         "One-on-one session",
         "An interview",
-        "Meeting with vendor"
+        "Meeting with vendor",
+        "Email flood"
     ]
 
     var timeWastedByBAs = 0;
@@ -342,7 +343,7 @@
         }
 
         // Other requests may also appear
-        if (Math.random() > 0.9) {
+        if (Math.random() > 0.75) {
             var otherRequestName = otherRequestsTypes[Math.floor(Math.random()*otherRequestsTypes.length)];
             var newOtherRequest = {
                 id:(requestCounter++),
