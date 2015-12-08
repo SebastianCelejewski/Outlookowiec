@@ -210,8 +210,9 @@
             return "<p>None!</p>"
         }
         var result = "";
-        for (var i = 0; i < allRequests.length; i++) {
-            result += "<p class='task'>" + allRequests[i].getName() +"</p>";
+        var subarray = allRequests.slice(Math.max(allRequests.length - 5, 1))
+        for (var i = 0; i < subarray.length; i++) {
+            result += "<p class='task'>" + subarray[i].getName() +"</p>";
         }
         return result;
     }
