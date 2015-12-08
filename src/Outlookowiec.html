@@ -130,6 +130,8 @@
     var requestsFromAnalysts = [];
     var requestsFromDevelopers = [];
     var requestsFromSupport = [];
+    var otherRequests = [];
+
     var doNothing = {
         id:undefined,
         type:"DoNothing",
@@ -140,6 +142,12 @@
         "We need to be very careful",
         "We need to have a sense of urgency",
         "The sponsor is in a very aggresive mood today"
+    ]
+
+    var otherRequestsTypes = [
+        "One-on-one session",
+        "An interview",
+        "Meeting with vendor"
     ]
 
     var timeWastedByBAs = 0;
@@ -178,6 +186,14 @@
             var request = requestsFromSupport[i];
             if (request.id == id) {
                 requestsFromSupport.splice(i, 1);
+                youDidSomething = true;
+            }
+        }
+
+        for (var i = 0; i < otherRequests.length; i++) {
+            var request = otherRequests[i];
+            if (request.id == id) {
+                otherRequests.splice(i, 1);
                 youDidSomething = true;
             }
         }
@@ -307,6 +323,15 @@
             projectLog.push("Analysts are working on new tasks");
         }
 
+        // Not resolved support requests?
+        if (requestsFromSupport.length == 1) {
+            projectLog.push("Support request was not handled! You loose 1 point.");
+            score -= requestsFromSupport.length;
+        } else if (requestsFromSupport.length > 1) {
+            projectLog.push("Support requests were not handled! You loose " + requestsFromSupport.length+" points.");
+            score -= requestsFromSupport.length;
+        }
+
         // Support requests may appear
         if (Math.random()>0.8) {
             var newSupportRequest = {
@@ -316,6 +341,18 @@
                 }
             requestsFromSupport.push(newSupportRequest);
             projectLog.push("A support request has arrived");
+        }
+
+        // Other requests may also appear
+        if (Math.random() > 0.9) {
+            var otherRequestName = otherRequestsTypes[Math.floor(Math.random()*otherRequestsTypes.length)];
+            var newOtherRequest = {
+                id:(requestCounter++),
+                status:"new",
+                getName:function() {return otherRequestName}
+                }
+            otherRequests.push(newOtherRequest);
+            projectLog.push(otherRequestName);
         }
 
         if (!developersHadSomethingToDo) {
@@ -346,7 +383,7 @@
         document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
         document.getElementById("complete").innerHTML =  printTasks(complete);
 
-        var allRequests = [doNothing].concat(requestsFromAnalysts).concat(requestsFromDevelopers).concat(requestsFromSupport);
+        var allRequests = [doNothing].concat(requestsFromAnalysts).concat(requestsFromDevelopers).concat(requestsFromSupport).concat(otherRequests);
 
         document.getElementById("requests").innerHTML = printActions(allRequests);
 
