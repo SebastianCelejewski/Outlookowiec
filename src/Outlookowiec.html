@@ -36,6 +36,7 @@
     width: 200px;
     height: 200px;
     background-color: white;
+    vertical-align: top;
 }
 
 .projectLog {
@@ -85,7 +86,7 @@
     <legend>Game Info</legend>
     <div class="gameInfoField" id="roundNumber"></div>
     <div class="gameInfoField" id="score"></div>
-    <div class="gameInfoField" id="timeWastedByBAs"></div>
+    <div class="gameInfoField" id="timeWastedByAnalysts"></div>
     <div class="gameInfoField" id="timeWastedByDevelopers"></div>
     <div class="gameInfoField" id="timeWastedByYou"></div>
 </fieldset>
@@ -150,7 +151,7 @@
         "Email flood"
     ]
 
-    var timeWastedByBAs = 0;
+    var timeWastedByAnalysts = 0;
     var timeWastedByDevelopers = 0;
     var timeWastedByYou = 0;
 
@@ -283,7 +284,7 @@
                 complete.push(task);
                 score += task.importance;
                 developersHadSomethingToDo = true;
-                projectLog.push("Developers completed a task. You gained " + task.importance + " points.");
+                projectLog.push("<span style='color:green'>Developers completed a task. You gained " + task.importance + " points.</span>");
             }
 
             // Developers just doing their job
@@ -324,10 +325,10 @@
 
         // Not resolved support requests?
         if (requestsFromSupport.length == 1) {
-            projectLog.push("Support request was not handled! You loose 1 point.");
+            projectLog.push("<span style='color: red'>Support request was not handled! You loose 1 point.</span>");
             score -= requestsFromSupport.length;
         } else if (requestsFromSupport.length > 1) {
-            projectLog.push("Support requests were not handled! You loose " + requestsFromSupport.length+" points.");
+            projectLog.push("<span style='color: red'>Support requests were not handled! You loose " + requestsFromSupport.length+" points.</span>");
             score -= requestsFromSupport.length;
         }
 
@@ -359,7 +360,7 @@
         }
 
         if (!analystsHadSomethingToDo) {
-            timeWastedByBAs += 1;
+            timeWastedByAnalysts += 1;
         }
 
         while (projectLog.length > 8) {
@@ -368,13 +369,13 @@
 
         var messageFromTheLeader = messagesFromTheLeader[Math.floor(Math.random()*messagesFromTheLeader.length)]
 
-        var analystsWastedTimePercent = Math.floor(100 * timeWastedByBAs / round);
+        var analystsWastedTimePercent = Math.floor(100 * timeWastedByAnalysts / round);
         var developersWastedTimePercent = Math.floor(100 * timeWastedByDevelopers / round);
         var yourWastedTimePercent = Math.floor(100 * timeWastedByYou / (round-1));
 
         document.getElementById("roundNumber").innerHTML = "<p>Round: "+round+"</p>";
         document.getElementById("score").innerHTML = "<p>Score: "+score+"</p>";
-        document.getElementById("timeWastedByBAs").innerHTML = "<p>Time wasted by BAs: "+timeWastedByBAs+" ("+analystsWastedTimePercent+"%)</p>";
+        document.getElementById("timeWastedByAnalysts").innerHTML = "<p>Time wasted by analysts: "+timeWastedByAnalysts+" ("+analystsWastedTimePercent+"%)</p>";
         document.getElementById("timeWastedByDevelopers").innerHTML = "<p>Time wasted by developers: "+timeWastedByDevelopers+" ("+developersWastedTimePercent+"%)</p>";
         document.getElementById("timeWastedByYou").innerHTML = "<p>Time wasted by you: "+timeWastedByYou+" ("+yourWastedTimePercent+"%)</p>";
 
