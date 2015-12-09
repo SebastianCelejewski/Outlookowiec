@@ -158,7 +158,7 @@
 
     var projectLog = [];
 
-    function solve(id) {
+    function solve(id, element) {
         var youDidSomething = false;
 
         for (var i = 0; i < requestsFromAnalysts.length; i++) {
@@ -204,7 +204,10 @@
             timeWastedByYou += 1;
         }
 
-        step();
+        document.getElementById('requestsPanel').style.cursor = "wait";
+        element.style.cursor = "wait";
+
+        window.setTimeout(step,1000);
     }
 
     function printTasks(allRequests) {
@@ -228,7 +231,7 @@
         }
         var result = "";
         for (var i = 0; i < taskboardPhase.length; i++) {
-            result += "<p class='action' onclick='solve("+taskboardPhase[i].id+");'>" + taskboardPhase[i].getName() +"</p>";
+            result += "<p class='action' onclick='solve("+taskboardPhase[i].id+", this);'>" + taskboardPhase[i].getName() +"</p>";
         }
         return result;
     }
@@ -242,6 +245,9 @@
     }
 
     function step() {
+
+        document.getElementById('requestsPanel').style.cursor = "pointer";
+
         projectLog.push("Round "+round);
 
         // If developers are not doing anything and backlog has something
