@@ -37,6 +37,7 @@
     height: 200px;
     background-color: white;
     vertical-align: top;
+    overflow: hidden;
 }
 
 .projectLog {
@@ -211,7 +212,10 @@
             return "<p>None!</p>"
         }
         var result = "";
-        var subarray = allRequests.slice(Math.max(allRequests.length - 5, 1))
+        var subarray = allRequests;
+        while (subarray.length > 5) {
+            subarray.shift();
+        }
         for (var i = 0; i < subarray.length; i++) {
             result += "<p class='task'>" + subarray[i].getName() +"</p>";
         }
