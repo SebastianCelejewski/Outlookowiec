@@ -135,12 +135,7 @@
     var requestsFromDevelopers = [];
     var requestsFromSupport = [];
     var otherRequests = [];
-
-    var doNothing = {
-        id:undefined,
-        type:"DoNothing",
-        getName:function() {return "Do nothing"}
-    }
+    
 
     var messagesFromTheLeader = [
     ]
@@ -151,6 +146,18 @@
         "Meeting with vendor",
         "Email flood"
     ]
+
+    var otherActivitiesTypes = [
+        "Do nothing",
+        "Check Facebook",
+        "Have some Chocaine"
+    ]
+
+    var otherActivities = otherActivitiesTypes.map(function(a) { return {
+        id: -1,
+        status:"new",
+        getName:function() { return a }
+    }});
 
     var timeWastedByAnalysts = 0;
     var timeWastedByDevelopers = 0;
@@ -393,7 +400,7 @@
         document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
         document.getElementById("complete").innerHTML =  printTasks(complete);
 
-        var allRequests = [doNothing].concat(requestsFromAnalysts).concat(requestsFromDevelopers).concat(requestsFromSupport).concat(otherRequests);
+        var allRequests = otherActivities.concat(requestsFromAnalysts).concat(requestsFromDevelopers).concat(requestsFromSupport).concat(otherRequests);
 
         document.getElementById("requests").innerHTML = printActions(allRequests);
 
