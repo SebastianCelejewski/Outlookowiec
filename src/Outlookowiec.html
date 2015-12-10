@@ -11,14 +11,14 @@
 #taskboardPanel {
     border: 1px solid black;
     width: 740px;
-    height: 300px;
+    height: 350px;
     float:left;
     background-color: #f8f8f0;
 }
 
 #projectLogPanel {
     border: 1px solid black;
-    height: 300px;
+    height: 350px;
     background-color: #f8f8f0;
 }
 
@@ -34,14 +34,18 @@
     margin: 10px;
     padding: 10px;
     width: 200px;
-    height: 200px;
+    height: 300px;
     background-color: white;
     vertical-align: top;
     overflow: hidden;
 }
 
+.featureTeamBox {
+    border: 1px solid blue;
+}
+
 .projectLog {
-    height: 200px;
+    height: 300px;
 }
 
 .task {
@@ -103,6 +107,18 @@
     <fieldset class="taskboardElement">
         <legend>In Progress</legend>
         <div id="inProgress"></div>
+        <fieldset class="featureTeamBox">
+            <legend>Feature Team 1</legend>
+            <div id="featureTeam1"></div>
+        </fieldset>
+        <fieldset class="featureTeamBox">
+            <legend>Feature Team 2</legend>
+            <div id="featureTeam2"></div>
+        </fieldset>
+        <fieldset class="featureTeamBox">
+            <legend>Feature Team 3</legend>
+            <div id="featureTeam3"></div>
+        </fieldset>
     </fieldset>
 
     <fieldset class="taskboardElement">
@@ -131,11 +147,17 @@
     var taskCounter = 0;
     var requestCounter = 0;
 
+    var numberOfFeatureTeams = 3;
+
     var requestsFromAnalysts = [];
     var requestsFromDevelopers = [];
     var requestsFromSupport = [];
     var otherRequests = [];
-    
+
+    for (var i = 0; i < numberOfFeatureTeams; i++) {
+        inProgress.push([]);
+        requestsFromDevelopers.push([]);
+    }
 
     var messagesFromTheLeader = [
     ]
@@ -176,18 +198,20 @@
             }
         }
 
-        for (var i = 0; i < requestsFromDevelopers.length; i++) {
-            var request = requestsFromDevelopers[i];
-            if (request.id == id) {
-                requestsFromDevelopers.splice(i, 1);
-                var taskId = request.refId;
-                for (var j = 0; j < inProgress.length; j++) {
-                    var task = inProgress[j];
-                    if (task.id == taskId) {
-                        task.status="InProgress";
+        for (var ft = 0; ft < numberOfFeatureTeams; ft++) {
+            for (var i = 0; i < requestsFromDevelopers[ft].length; i++) {
+                var request = requestsFromDevelopers[ft][i];
+                if (request.id == id) {
+                    requestsFromDevelopers[ft].splice(i, 1);
+                    var taskId = request.refId;
+                    for (var j = 0; j < inProgress[ft].length; j++) {
+                        var task = inProgress[ft][j];
+                        if (task.id == taskId) {
+                            task.status="InProgress";
+                        }
                     }
+                    youDidSomething = true;
                 }
-                youDidSomething = true;
             }
         }
 
@@ -263,57 +287,60 @@
         var developersHadSomethingToDo = false;
         var analystsHadSomethingToDo = false;
 
-        if (inProgress.length == 0 && backlog.length > 0) {
-            var task = backlog.pop();
-            inProgress.push(task);
-            projectLog.push("Developers picked a task to work on");
-            var newRequest = {
-                id:(requestCounter++),
-                type:"DevAnalysis",
-                refId:task.id,
-                getName:function() {return "Dev Analysis for task #"+task.id}
+        for (var ft = 0; ft < numberOfFeatureTeams; ft++) {
+            if (inProgress[ft].length == 0 && backlog.length > 0) {
+                var task = backlog.pop();
+                inProgress[ft].push(task);
+                projectLog.push("Developers from feature team #"+ft+" picked a task to work on");
+                var newRequest = {
+                    id:(requestCounter++),
+                    type:"DevAnalysis",
+                    refId:task.id,
+                    getName:function() {return "Dev Analysis for task #"+task.id}
+                }
+                requestsFromDevelopers[ft].push(newRequest);
+                developersHadSomethingToDo = true;
+                projectLog.push("Developers from feature team #"+ft+" requested dev analysis");
             }
-            requestsFromDevelopers.push(newRequest);
-            developersHadSomethingToDo = true;
-            projectLog.push("Developers requested dev analysis");
         }
-
         // If developers have a card and all othe requests from developers are handled
         // they may have a question
-        if (inProgress.length > 0 && requestsFromDevelopers.length == 0) {
-            var task = inProgress[0];
-            if (Math.random() > 0.8) {
-                var newQuestion = {
-                    id:(requestCounter++),
-                    status:"new",
-                    refId:undefined,
-                    getName:function() {return "Question #"+this.id+" from developers for task #"+task.id}
+        for (var ft = 0; ft < numberOfFeatureTeams; ft++) {
+            if (inProgress[ft].length > 0 && requestsFromDevelopers[ft].length == 0) {
+                var task = inProgress[ft][0];
+                if (Math.random() > 0.8) {
+                    var newQuestion = {
+                        id:(requestCounter++),
+                        status:"new",
+                        refId:undefined,
+                        getName:function() {return "Question #"+this.id+" from developers for task #"+task.id}
+                        }
+                    requestsFromDevelopers[ft].push(newQuestion);
+                    developersHadSomethingToDo = true;
+                    projectLog.push("Developers asked a question");
+                } else if (Math.random() > 0.8) {
+                    for (var i = 0; i < inProgress[ft].length; i++) {
+                        if (task.id == inProgress[ft][i].id) {
+                            inProgress[ft].splice(i, 1);
+                        }
                     }
-                requestsFromDevelopers.push(newQuestion);
-                developersHadSomethingToDo = true;
-                projectLog.push("Developers asked a question");
-            } else if (Math.random() > 0.8) {
-                for (var i = 0; i < inProgress.length; i++) {
-                    if (task.id == inProgress[i].id) {
-                        inProgress.splice(i, 1);
-                    }
+                    complete.push(task);
+                    score += task.importance;
+                    developersHadSomethingToDo = true;
+                    projectLog.push("<span style='color:green'>Developers completed a task. You gained " + task.importance + " points.</span>");
                 }
-                complete.push(task);
-                score += task.importance;
-                developersHadSomethingToDo = true;
-                projectLog.push("<span style='color:green'>Developers completed a task. You gained " + task.importance + " points.</span>");
-            }
 
-            // Developers just doing their job
-            developersHadSomethingToDo = true;
-            projectLog.push("Developers are working on a task");
+                // Developers just doing their job
+                developersHadSomethingToDo = true;
+                projectLog.push("Developers are working on a task");
+            }
         }
 
         // If there are no more than 4 cards in Backlog and all
         // requests from analysts are handled
         // analysts may create new task
         if (requestsFromAnalysts.length == 0 && backlog.length < 5) {
-            if (Math.random() > 0.8) {
+            if (Math.random() > 0.5) {
                 var newTask = {
                     id:(taskCounter++),
                     status:"new",
@@ -397,10 +424,16 @@
         document.getElementById("timeWastedByYou").innerHTML = "<p>Time wasted by you: "+timeWastedByYou+" ("+yourWastedTimePercent+"%)</p>";
 
         document.getElementById("backlog").innerHTML =  printTasks(backlog);
-        document.getElementById("inProgress").innerHTML =  printTasks(inProgress);
+
+        for (var ft = 0; ft < numberOfFeatureTeams; ft++) {
+            document.getElementById("featureTeam"+(ft+1)).innerHTML =  printTasks(inProgress[ft]);
+        }
         document.getElementById("complete").innerHTML =  printTasks(complete);
 
-        var allRequests = otherActivities.concat(requestsFromAnalysts).concat(requestsFromDevelopers).concat(requestsFromSupport).concat(otherRequests);
+        var allRequests = otherActivities.concat(requestsFromAnalysts).concat(requestsFromSupport).concat(otherRequests);
+        for (var ft = 0; ft < numberOfFeatureTeams; ft++) {
+            allRequests = allRequests.concat(requestsFromDevelopers[ft]);
+        }
 
         document.getElementById("requests").innerHTML = printActions(allRequests);
 
