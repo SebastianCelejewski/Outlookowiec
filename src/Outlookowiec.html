@@ -291,7 +291,7 @@
             if (inProgress[ft].length == 0 && backlog.length > 0) {
                 var task = backlog.pop();
                 inProgress[ft].push(task);
-                projectLog.push("Developers from feature team #"+ft+" picked a task to work on");
+                projectLog.push("Developers from feature team #"+ft+" picked a task #"+task.id+" to work on");
                 var newRequest = {
                     id:(requestCounter++),
                     type:"DevAnalysis",
